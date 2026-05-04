@@ -1,0 +1,13 @@
+{
+  "name": "account",
+  "displayName": "Account",
+  "description": "Manage your account: change username and password.",
+  "version": "0.1.0",
+  "author": "Ibrahim AlRukhaimi",
+  "repository": "https://github.com/iRukhaimi/claudecodeui-plugin-account",
+  "license": "AGPL-3.0-or-later",
+  "entry": "dist/index.js",
+  "type": "module",
+  "slot": "tab",
+  "icon": "user.svg"
+}

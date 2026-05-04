@@ -1,0 +1,115 @@
+diff --git a/server/routes/auth.js b/server/routes/auth.js
+index dcb2e3f..51fcf8a 100644
+--- a/server/routes/auth.js
++++ b/server/routes/auth.js
+@@ -1,8 +1,13 @@
+ import express from 'express';
+ import bcrypt from 'bcrypt';
++
+ import { userDb } from '../modules/database/index.js';
+ import { getConnection } from '../modules/database/connection.js';
+ import { generateToken, authenticateToken } from '../middleware/auth.js';
++import { IS_PLATFORM } from '../constants/config.js';
++
++const USERNAME_RE = /^[a-zA-Z0-9_]{3,32}$/;
++const MIN_PASSWORD_LENGTH = 8;
+ 
+ const router = express.Router();
+ const db = getConnection();
+@@ -134,4 +139,96 @@ router.post('/logout', authenticateToken, (req, res) => {
+   res.json({ success: true, message: 'Logged out successfully' });
+ });
+ 
++// Change current user's password.
++// Requires the current password to confirm intent (defense against token theft).
++router.put('/account/password', authenticateToken, async (req, res) => {
++  if (IS_PLATFORM) {
++    return res.status(403).json({ error: 'Account management is disabled in platform mode' });
++  }
++  try {
++    const { currentPassword, newPassword } = req.body || {};
++
++    if (!currentPassword || !newPassword) {
++      return res.status(400).json({ error: 'Current and new passwords are required' });
++    }
++    if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
++      return res.status(400).json({ error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters` });
++    }
++    if (currentPassword === newPassword) {
++      return res.status(400).json({ error: 'New password must be different from the current password' });
++    }
++
++    const user = userDb.getUserWithPasswordById(req.user.id);
++    if (!user) {
++      return res.status(404).json({ error: 'User not found' });
++    }
++
++    const valid = await bcrypt.compare(currentPassword, user.password_hash);
++    if (!valid) {
++      return res.status(401).json({ error: 'Current password is incorrect' });
++    }
++
++    const newHash = await bcrypt.hash(newPassword, 12);
++    if (!userDb.updatePassword(user.id, newHash)) {
++      return res.status(500).json({ error: 'Failed to update password' });
++    }
++
++    // Issue a fresh token for the current session so it stays valid.
++    const token = generateToken({ id: user.id, username: user.username });
++    res.json({ success: true, token });
++  } catch (error) {
++    console.error('Change password error:', error);
++    res.status(500).json({ error: 'Internal server error' });
++  }
++});
++
++// Change current user's username.
++// Requires the current password to confirm intent.
++router.put('/account/username', authenticateToken, async (req, res) => {
++  if (IS_PLATFORM) {
++    return res.status(403).json({ error: 'Account management is disabled in platform mode' });
++  }
++  try {
++    const { currentPassword, newUsername } = req.body || {};
++
++    if (!currentPassword || !newUsername) {
++      return res.status(400).json({ error: 'Current password and new username are required' });
++    }
++    if (typeof newUsername !== 'string' || !USERNAME_RE.test(newUsername)) {
++      return res.status(400).json({ error: 'Username must be 3–32 characters: letters, numbers, underscore' });
++    }
++
++    const user = userDb.getUserWithPasswordById(req.user.id);
++    if (!user) {
++      return res.status(404).json({ error: 'User not found' });
++    }
++    if (newUsername === user.username) {
++      return res.status(400).json({ error: 'New username must be different from the current one' });
++    }
++
++    const valid = await bcrypt.compare(currentPassword, user.password_hash);
++    if (!valid) {
++      return res.status(401).json({ error: 'Current password is incorrect' });
++    }
++
++    try {
++      if (!userDb.updateUsername(user.id, newUsername)) {
++        return res.status(500).json({ error: 'Failed to update username' });
++      }
++    } catch (err) {
++      if (err && err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
++        return res.status(409).json({ error: 'Username already taken' });
++      }
++      throw err;
++    }
++
++    // Re-issue token so JWT claims (username) reflect the change immediately.
++    const token = generateToken({ id: user.id, username: newUsername });
++    res.json({ success: true, user: { id: user.id, username: newUsername }, token });
++  } catch (error) {
++    console.error('Change username error:', error);
++    res.status(500).json({ error: 'Internal server error' });
++  }
++});
++
+ export default router;

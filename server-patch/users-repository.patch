@@ -1,0 +1,43 @@
+diff --git a/server/modules/database/repositories/users.ts b/server/modules/database/repositories/users.ts
+index 25bb57b..108b3c6 100644
+--- a/server/modules/database/repositories/users.ts
++++ b/server/modules/database/repositories/users.ts
+@@ -89,6 +89,38 @@ export const userDb = {
+       .get(userId) as UserPublicRow | undefined;
+   },
+ 
++  /**
++   * Returns the full row (incl. password hash) by ID.
++   * Used only when verifying the current password before a sensitive change.
++   */
++  getUserWithPasswordById(userId: number): UserRow | undefined {
++    const db = getConnection();
++    return db
++      .prepare('SELECT * FROM users WHERE id = ? AND is_active = 1')
++      .get(userId) as UserRow | undefined;
++  },
++
++  /** Updates the password hash. Returns true if a row was affected. */
++  updatePassword(userId: number, newHash: string): boolean {
++    const db = getConnection();
++    const r = db
++      .prepare('UPDATE users SET password_hash = ? WHERE id = ? AND is_active = 1')
++      .run(newHash, userId);
++    return r.changes > 0;
++  },
++
++  /**
++   * Updates the username. Throws on UNIQUE conflict (caller maps to 409).
++   * Returns true if a row was affected.
++   */
++  updateUsername(userId: number, newUsername: string): boolean {
++    const db = getConnection();
++    const r = db
++      .prepare('UPDATE users SET username = ? WHERE id = ? AND is_active = 1')
++      .run(newUsername, userId);
++    return r.changes > 0;
++  },
++
+   /** Returns the first active user. Used for single-user mode lookups. */
+   getFirstUser(): UserPublicRow | undefined {
+     const db = getConnection();
