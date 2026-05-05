@@ -4,9 +4,19 @@
 >
 > An open source project by **[Nawras](https://alkindy.tech/nawras)** — the open source initiative of **[AlKindy](https://alkindy.tech)**.
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](LICENSE)
 [![Made by Nawras](https://img.shields.io/badge/made%20by-Nawras-teal.svg)](https://alkindy.tech/nawras)
-![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
+
+> **Independent project — not affiliated with Anthropic or siteboon.**
+> "Claude" is a trademark of Anthropic, PBC. This plug-in is a community
+> project that operates on top of [Claude Code UI](https://github.com/siteboon/claudecodeui)
+> by siteboon. It is not endorsed by, sponsored by, or affiliated with
+> either party.
+>
+> **مشروع مستقل — غير منتسب لـAnthropic ولا لـsiteboon.**
+> "Claude" علامة تجارية لـAnthropic. هذه الإضافة مستقلة وتعمل فوق
+> Claude Code UI من siteboon، وليست مدعومة منهم.
 
 ---
 
@@ -73,7 +83,7 @@ ln -sfn "$(pwd)" ~/.claude-code-ui/plugins/account
 لبلاغات الثغرات: [SECURITY.md](SECURITY.md) أو `security@alkindy.tech`.
 
 ### الترخيص
-Apache 2.0 — راجع [LICENSE](LICENSE) و[NOTICE](NOTICE).
+AGPL-3.0-or-later — راجع [LICENSE](LICENSE) و[NOTICE](NOTICE). يطابق ترخيص الـhost الأصلي ([siteboon/claudecodeui](https://github.com/siteboon/claudecodeui)).
 
 ---
 
@@ -148,7 +158,29 @@ plugins/account/
 - bcrypt cost 12 (matches the host).
 - DB enforces username uniqueness; route maps SQLite `UNIQUE` to `409`.
 - Disabled in platform mode.
+- **Rate limiting** (since 0.1.1): 5 attempts / 15 min per IP+user on
+  `/api/auth/account/username` and `/api/auth/account/password` —
+  defends against brute-forcing the current-password check.
 - **Audit logging is not added** — wire your own if PDPL / SOX applies.
+
+### Troubleshooting
+
+| Symptom | Cause / Fix |
+|---|---|
+| `git apply` fails on a patch | Host upstream has drifted. Try `git apply --3way`, or rebase the patch manually against the current upstream commit. |
+| Plug-in does not appear after build | Ensure `~/.claude-code-ui/plugins/account` symlink points to your build dir, then **Settings → Plugins → toggle on**, then full page refresh. |
+| `403` on `PUT /api/auth/account/*` | Host is in platform mode (`IS_PLATFORM=true`). Endpoints are intentionally disabled. |
+| `409 Conflict` on username change | Username already taken. Pick another (host enforces UNIQUE). |
+| `429 Too Many Requests` | Rate limit (5 / 15 min per IP+user). Wait, then retry. |
+| JWT not refreshed in client | Make sure the client reads `Authorization` from the response and updates its stored token. |
+| "Account" appears both as a top tab AND inside Settings | You haven't applied `host-ui-integration/ui-integration.patch`. Apply it (or live with the top tab). |
+
+### Upstream attribution
+Host: [siteboon/claudecodeui](https://github.com/siteboon/claudecodeui),
+licensed under AGPL-3.0-or-later. This plug-in is a separate project
+that does **not** redistribute the host. The unified diffs in
+`server-patch/` and `host-ui-integration/`, when applied, modify host
+source — that derivative work inherits AGPL-3.0-or-later.
 
 ### Contributing
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -157,7 +189,9 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code 
 For vulnerability reports: [SECURITY.md](SECURITY.md) or `security@alkindy.tech`.
 
 ### License
-Apache 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+**AGPL-3.0-or-later** — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Matches
+the upstream host. Earlier `0.1.0` was tagged Apache-2.0; that was
+incorrect and is superseded by `0.1.1`.
 
 ---
 

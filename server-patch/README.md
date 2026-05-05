@@ -26,6 +26,17 @@ git apply path/to/plugins/account/server-patch/users-repository.patch
 If `git apply` rejects (e.g. upstream evolved), open the patches and copy the
 two route handlers + three repository methods manually.
 
+## Peer requirements
+
+The patch imports `express-rate-limit`. The host's `package.json` does **not**
+include it by default, so install it once at the host root:
+
+```bash
+npm install express-rate-limit@^7
+```
+
+`express` and `bcrypt` are already host dependencies.
+
 ## What gets added
 
 **Routes** (`server/routes/auth.js`):
@@ -34,6 +45,13 @@ two route handlers + three repository methods manually.
 - `PUT /api/auth/account/username` — verifies current password, validates
   `^[a-zA-Z0-9_]{3,32}$`, persists, returns a refreshed JWT.
 - Both reject with `403` when `IS_PLATFORM=true`.
+- Both gated by an `express-rate-limit` middleware: **5 attempts per
+  15 minutes** keyed on `${ip}:${userId}` (returns `429` on excess).
+
+> `rate-limit.patch` is provided as an **incremental** alternative for users
+> who already applied an older `auth-routes.patch` without rate-limiting.
+> If you apply the current `auth-routes.patch`, do **not** apply
+> `rate-limit.patch` — it would conflict.
 
 **Repository** (`server/modules/database/repositories/users.ts`):
 - `getUserWithPasswordById(id)` — full row incl. hash (used only for current-

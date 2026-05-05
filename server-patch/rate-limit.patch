@@ -1,0 +1,52 @@
+diff --git a/server/routes/auth.js b/server/routes/auth.js
+index 51fcf8a..a6b2d4e 100644
+--- a/server/routes/auth.js
++++ b/server/routes/auth.js
+@@ -1,6 +1,7 @@
+ import express from 'express';
+ import bcrypt from 'bcrypt';
+
++import rateLimit from 'express-rate-limit';
+ import { userDb } from '../modules/database/index.js';
+ import { getConnection } from '../modules/database/connection.js';
+ import { generateToken, authenticateToken } from '../middleware/auth.js';
+@@ -9,6 +10,22 @@ import { IS_PLATFORM } from '../constants/config.js';
+ const USERNAME_RE = /^[a-zA-Z0-9_]{3,32}$/;
+ const MIN_PASSWORD_LENGTH = 8;
+
++// Rate limit for account-mutation endpoints: 5 attempts per 15 minutes per (IP + user).
++// Keyed by user id when available so a shared IP (NAT) doesn't lock out
++// other users, and falls back to IP for unauthenticated probes.
++const accountChangeLimiter = rateLimit({
++  windowMs: 15 * 60 * 1000,
++  max: 5,
++  standardHeaders: true,
++  legacyHeaders: false,
++  keyGenerator: (req) => {
++    const uid = req.user && req.user.id ? String(req.user.id) : 'anon';
++    return `${req.ip}:${uid}`;
++  },
++  message: { error: 'Too many account change attempts. Try again later.' },
++});
++
+ const router = express.Router();
+ const db = getConnection();
+
+@@ -141,7 +158,7 @@ router.post('/logout', authenticateToken, (req, res) => {
+
+ // Change current user's password.
+ // Requires the current password to confirm intent (defense against token theft).
+-router.put('/account/password', authenticateToken, async (req, res) => {
++router.put('/account/password', authenticateToken, accountChangeLimiter, async (req, res) => {
+   if (IS_PLATFORM) {
+     return res.status(403).json({ error: 'Account management is disabled in platform mode' });
+   }
+@@ -182,7 +199,7 @@ router.put('/account/password', authenticateToken, async (req, res) => {
+
+ // Change current user's username.
+ // Requires the current password to confirm intent.
+-router.put('/account/username', authenticateToken, async (req, res) => {
++router.put('/account/username', authenticateToken, accountChangeLimiter, async (req, res) => {
+   if (IS_PLATFORM) {
+     return res.status(403).json({ error: 'Account management is disabled in platform mode' });
+   }
