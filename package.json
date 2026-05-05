@@ -1,6 +1,6 @@
 {
   "name": "account",
-  "version": "0.1.1",
+  "version": "0.2.0-experimental.1",
   "private": true,
   "description": "Account management plug-in (change username/password) for Claude Code UI by siteboon. Independent project, not affiliated with Anthropic.",
   "author": "AlKindy (الكندي) — Nawras",
@@ -13,10 +13,16 @@
   "bugs": "https://github.com/Nawras-io/claudecodeui-plugin-account/issues",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --format=esm --target=es2020 --outfile=dist/index.js",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "esbuild src/index.ts --bundle --format=esm --target=es2020 --outfile=dist/index.js",
+    "build:server": "esbuild src/server/server.ts --bundle --platform=node --format=esm --target=node18 --outfile=dist/server.js --external:better-sqlite3 --external:bcrypt",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.0.0"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.0",

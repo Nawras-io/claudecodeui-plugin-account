@@ -2,12 +2,14 @@
   "name": "account",
   "displayName": "Account",
   "description": "Manage your account: change username and password.",
-  "version": "0.1.1",
+  "version": "0.2.0-experimental.1",
   "author": "AlKindy (الكندي) — Nawras",
   "repository": "https://github.com/Nawras-io/claudecodeui-plugin-account",
   "license": "AGPL-3.0-or-later",
-  "entry": "dist/index.js",
   "type": "module",
   "slot": "tab",
-  "icon": "user.svg"
+  "entry": "dist/index.js",
+  "server": "dist/server.js",
+  "icon": "user.svg",
+  "permissions": ["user.identity"]
 }

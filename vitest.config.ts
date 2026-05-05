@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/api.ts'],
+      include: ['src/api.ts', 'src/server/auth.ts'],
       thresholds: {
         lines: 70,
         functions: 70,
