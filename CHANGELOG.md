@@ -5,6 +5,26 @@ All notable changes to this plug-in will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `docs/internal/cloudcli-plugin-system-analysis.md` — deep technical
+  analysis of the cloudcli plugin subsystem (loader, process manager,
+  HTTP/WS proxy, auth context) used as the basis for the upstream RFC.
+- `docs/internal/upstream-rfc-issue.md` — draft of the upstream RFC,
+  filed as [siteboon/claudecodeui#744](https://github.com/siteboon/claudecodeui/issues/744).
+
+### Changed
+- `README` — added bilingual **Roadmap** section covering v0.1.x
+  (current, manual integration with patches) and v0.2.0 (planned pure
+  plug-in pending upstream RFC), a "Why two versions?" subsection
+  referencing `docs/internal/cloudcli-plugin-system-analysis.md`
+  §3-4 and §7, an advanced-users note in both install sections, and
+  a Status badge/paragraph clarifying current stable v0.1.1 and next
+  planned v0.2.0. Tracking issue link wired to
+  [siteboon/claudecodeui#744](https://github.com/siteboon/claudecodeui/issues/744).
+  Documentation-only; no code or version bump.
+
 ## [0.1.1] — 2026-05-05
 
 ### Changed

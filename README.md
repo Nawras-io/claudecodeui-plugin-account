@@ -7,6 +7,12 @@
 [![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](LICENSE)
 [![Made by Nawras](https://img.shields.io/badge/made%20by-Nawras-teal.svg)](https://alkindy.tech/nawras)
 ![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
+![Next](https://img.shields.io/badge/next-0.2.0%20(pending%20RFC)-orange.svg)
+
+> **Status / الحالة:** current stable **v0.1.1** · next planned **v0.2.0**
+> (pending upstream RFC acceptance in `siteboon/claudecodeui`).
+> الإصدار المستقر الحالي **v0.1.1**، والإصدار التالي المخطط له **v0.2.0**
+> (بانتظار قبول RFC في المستودع الأصلي).
 
 > **Independent project — not affiliated with Anthropic or siteboon.**
 > "Claude" is a trademark of Anthropic, PBC. This plug-in is a community
@@ -32,6 +38,54 @@
 
 ---
 
+## خارطة الطريق | Roadmap
+
+### v0.1.x — current (manual integration) | الإصدار الحالي (تكامل يدوي)
+
+تثبيت من ثلاث خطوات: **تنزيل** الإضافة، **تطبيق patches** على الـhost،
+ثم **تفعيل** من Settings → Plugins. مناسب للمستخدمين المتقدمين القادرين
+على تعديل تثبيت الـhost. القيود: ليست إضافة نقية — تتطلب تعديل تثبيت
+الـhost؛ ولا يمكن تشغيلها على حزم npm مثبتة عالمياً دون إعادة بناء.
+
+Three-step install: **download** the plug-in, **apply patches** to the
+host, **enable** from Settings → Plugins. Suitable for advanced
+self-hosters who can apply server-side patches. Limitations: not a
+pure plug-in; requires modifying the host installation; cannot run
+against globally-installed npm packages without rebuilding.
+
+### v0.2.0 — planned (pure plug-in) | الإصدار المخطط (إضافة نقية)
+
+بعد دمج RFC في المستودع الأصلي، ستعمل الإضافة كوحدة قائمة بذاتها:
+نزّلها إلى `~/.claude-code-ui/plugins/account/`، فعّلها من
+Settings → Plugins، وانتهى الأمر. **بدون أي patches على الـhost.**
+سينتقل منطق الـbackend إلى `src/server.ts` ويعمل ضمن عملية إضافة
+معزولة (sandboxed). _Tracking issue: [siteboon/claudecodeui#744](https://github.com/siteboon/claudecodeui/issues/744)._
+
+After the upstream RFC is merged, the plug-in will run as a fully
+self-contained module: download to `~/.claude-code-ui/plugins/account/`,
+enable from Settings → Plugins, done. **No host patches.** Backend
+logic moves into `src/server.ts` and runs as a sandboxed plug-in
+process. _Tracking issue: [siteboon/claudecodeui#744](https://github.com/siteboon/claudecodeui/issues/744)._
+
+### لماذا إصداران؟ | Why two versions?
+
+اليوم، الـplugin proxy في الـhost لا يمرّر هوية المستخدم الموثَّقة
+إلى خوادم الإضافات (راجع
+[`docs/internal/cloudcli-plugin-system-analysis.md`](docs/internal/cloudcli-plugin-system-analysis.md)
+§3-4 و§7)، ما يجعل إدارة الحساب الآمنة من إضافة نقية مستحيلة. تعالج
+patches الإصدار v0.1.x هذه الفجوة بتعديل الـhost مباشرةً. سيستخدم
+الإصدار v0.2.0 ترويسات هوية موقَّعة بـ HMAC وفق الـRFC المقترح أعلاه.
+
+Today the host's plug-in proxy does not forward authenticated user
+identity to plug-in servers (see
+[`docs/internal/cloudcli-plugin-system-analysis.md`](docs/internal/cloudcli-plugin-system-analysis.md)
+§3-4 and §7), which makes secure account management impossible from a
+pure plug-in. The patches in v0.1.x bridge that gap by modifying the
+host directly. v0.2.0 will use HMAC-signed identity headers proposed
+in the upstream RFC.
+
+---
+
 ## 🇸🇦 العربية
 
 ### نظرة عامة
@@ -50,6 +104,10 @@
 - تطبيق **server patch** على الـhost (انظر [`server-patch/`](server-patch/README.md))
 
 ### التثبيت
+
+> ⚠️ **ملاحظة:** الإصدار v0.1.x موجَّه للمستخدمين المتقدمين القادرين
+> على تطبيق patches على الـhost. المستخدمون الأقل تخصصاً يُنصحون
+> بانتظار v0.2.0 (إضافة نقية، بلا patches).
 
 #### 1) طبّق server patch (مرة واحدة)
 من جذر مستودع الـhost:
@@ -105,6 +163,10 @@ A minimal plug-in for [Claude Code UI](https://github.com/cloudcli-ai/cloudcli-u
 - One-time **server patch** applied to the host (see [`server-patch/`](server-patch/README.md))
 
 ### Install
+
+> ⚠️ **Note:** v0.1.x is targeted at advanced users who can apply
+> server-side patches to the host. Less technical users should wait
+> for v0.2.0 (pure plug-in, no patches).
 
 #### 1) Apply the server patch (one-time)
 From the host repo root:
