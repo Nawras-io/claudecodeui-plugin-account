@@ -1,0 +1,259 @@
+diff --git a/src/components/main-content/view/subcomponents/MainContentTabSwitcher.tsx b/src/components/main-content/view/subcomponents/MainContentTabSwitcher.tsx
+index 51a5d64..3100b81 100644
+--- a/src/components/main-content/view/subcomponents/MainContentTabSwitcher.tsx
++++ b/src/components/main-content/view/subcomponents/MainContentTabSwitcher.tsx
+@@ -54,7 +54,7 @@ export default function MainContentTabSwitcher({
+   const builtInTabs: BuiltInTab[] = shouldShowTasksTab ? [...BASE_TABS, TASKS_TAB] : BASE_TABS;
+ 
+   const pluginTabs: PluginTab[] = plugins
+-    .filter((p) => p.enabled)
++    .filter((p) => p.enabled && p.name !== 'account')
+     .map((p) => ({
+       kind: 'plugin',
+       id: `plugin:${p.name}` as AppTab,
+diff --git a/src/components/settings/constants/constants.ts b/src/components/settings/constants/constants.ts
+index e41da39..cba8530 100644
+--- a/src/components/settings/constants/constants.ts
++++ b/src/components/settings/constants/constants.ts
+@@ -8,6 +8,7 @@ import {
+   ListChecks,
+   Palette,
+   Plug,
++  User,
+ } from 'lucide-react';
+ 
+ import type {
+@@ -27,6 +28,7 @@ export type SettingsMainTabMeta = {
+ };
+ 
+ export const SETTINGS_MAIN_TABS: SettingsMainTabMeta[] = [
++  { id: 'account', label: 'Account', keywords: 'account profile username password', icon: User },
+   { id: 'agents', label: 'Agents', keywords: 'agents subagents claude code', icon: Bot },
+   { id: 'appearance', label: 'Appearance', keywords: 'appearance theme dark light language', icon: Palette },
+   { id: 'git', label: 'Git', keywords: 'git github commits', icon: GitBranch },
+diff --git a/src/components/settings/hooks/useSettingsController.ts b/src/components/settings/hooks/useSettingsController.ts
+index 5463a5b..22beecb 100644
+--- a/src/components/settings/hooks/useSettingsController.ts
++++ b/src/components/settings/hooks/useSettingsController.ts
+@@ -52,7 +52,7 @@ type NotificationPreferencesResponse = {
+ 
+ type ActiveLoginProvider = AgentProvider | '';
+ 
+-const KNOWN_MAIN_TABS: SettingsMainTab[] = ['agents', 'appearance', 'git', 'api', 'tasks', 'notifications', 'plugins'];
++const KNOWN_MAIN_TABS: SettingsMainTab[] = ['account', 'agents', 'appearance', 'git', 'api', 'tasks', 'notifications', 'plugins', 'about'];
+ 
+ const normalizeMainTab = (tab: string): SettingsMainTab => {
+   // Keep backwards compatibility with older callers that still pass "tools".
+diff --git a/src/components/settings/types/types.ts b/src/components/settings/types/types.ts
+index 8fe3b7f..a9dd60f 100644
+--- a/src/components/settings/types/types.ts
++++ b/src/components/settings/types/types.ts
+@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
+ import type { LLMProvider } from '../../../types/app';
+ import type { ProviderAuthStatus } from '../../provider-auth/types';
+ 
+-export type SettingsMainTab = 'agents' | 'appearance' | 'git' | 'api' | 'tasks' | 'notifications' | 'plugins' | 'about';
++export type SettingsMainTab = 'account' | 'agents' | 'appearance' | 'git' | 'api' | 'tasks' | 'notifications' | 'plugins' | 'about';
+ export type AgentProvider = LLMProvider;
+ export type AgentCategory = 'account' | 'permissions' | 'mcp';
+ export type ProjectSortOrder = 'name' | 'date';
+diff --git a/src/components/settings/view/Settings.tsx b/src/components/settings/view/Settings.tsx
+index 8340a54..af133b6 100644
+--- a/src/components/settings/view/Settings.tsx
++++ b/src/components/settings/view/Settings.tsx
+@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
+ import ProviderLoginModal from '../../provider-auth/view/ProviderLoginModal';
+ import { Button } from '../../../shared/view/ui';
+ import SettingsSidebar from '../view/SettingsSidebar';
++import AccountSettingsTab from '../view/tabs/AccountSettingsTab';
+ import AgentsSettingsTab from '../view/tabs/agents-settings/AgentsSettingsTab';
+ import AppearanceSettingsTab from '../view/tabs/AppearanceSettingsTab';
+ import CredentialsSettingsTab from '../view/tabs/api-settings/CredentialsSettingsTab';
+@@ -106,6 +107,8 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
+           {/* Content */}
+           <main className="flex-1 overflow-y-auto">
+             <div key={activeTab} className="settings-content-enter space-y-6 p-4 pb-safe-area-inset-bottom md:space-y-8 md:p-6">
++              {activeTab === 'account' && <AccountSettingsTab />}
++
+               {activeTab === 'appearance' && (
+                 <AppearanceSettingsTab
+                   projectSortOrder={projectSortOrder}
+diff --git a/src/components/settings/view/SettingsSidebar.tsx b/src/components/settings/view/SettingsSidebar.tsx
+index 149c149..217c957 100644
+--- a/src/components/settings/view/SettingsSidebar.tsx
++++ b/src/components/settings/view/SettingsSidebar.tsx
+@@ -1,7 +1,8 @@
+-import { Bell, Bot, GitBranch, Info, Key, ListChecks, Palette, Puzzle } from 'lucide-react';
++import { Bell, Bot, GitBranch, Info, Key, ListChecks, LogOut, Palette, Puzzle, User } from 'lucide-react';
+ import { useTranslation } from 'react-i18next';
+ import { cn } from '../../../lib/utils';
+ import { PillBar, Pill } from '../../../shared/view/ui';
++import { useAuth } from '../../auth';
+ import type { SettingsMainTab } from '../types/types';
+ 
+ type SettingsSidebarProps = {
+@@ -16,6 +17,7 @@ type NavItem = {
+ };
+ 
+ const NAV_ITEMS: NavItem[] = [
++  { id: 'account', labelKey: 'mainTabs.account', icon: User },
+   { id: 'agents', labelKey: 'mainTabs.agents', icon: Bot },
+   { id: 'appearance', labelKey: 'mainTabs.appearance', icon: Palette },
+   { id: 'git', labelKey: 'mainTabs.git', icon: GitBranch },
+@@ -28,12 +30,20 @@ const NAV_ITEMS: NavItem[] = [
+ 
+ export default function SettingsSidebar({ activeTab, onChange }: SettingsSidebarProps) {
+   const { t } = useTranslation('settings');
++  const { t: tAuth } = useTranslation('auth');
++  const { logout } = useAuth();
++
++  const handleLogout = () => {
++    if (window.confirm(tAuth('logout.confirm'))) {
++      logout();
++    }
++  };
+ 
+   return (
+     <>
+       {/* Desktop sidebar */}
+-      <aside className="hidden w-56 flex-shrink-0 border-r border-border bg-muted/30 md:flex md:flex-col">
+-        <nav className="flex flex-col gap-1 p-3">
++      <aside className="hidden w-56 flex-shrink-0 flex-col border-r border-border bg-muted/30 md:flex">
++        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+           {NAV_ITEMS.map((item) => {
+             const Icon = item.icon;
+             const isActive = activeTab === item.id;
+@@ -55,11 +65,21 @@ export default function SettingsSidebar({ activeTab, onChange }: SettingsSidebar
+             );
+           })}
+         </nav>
++
++        <div className="flex-shrink-0 border-t border-border p-3">
++          <button
++            onClick={handleLogout}
++            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors duration-150 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
++          >
++            <LogOut className="h-4 w-4 flex-shrink-0" />
++            {tAuth('logout.button')}
++          </button>
++        </div>
+       </aside>
+ 
+       {/* Mobile horizontal nav — pill bar */}
+-      <div className="flex-shrink-0 border-b border-border px-3 py-2 md:hidden">
+-        <PillBar className="scrollbar-hide w-full overflow-x-auto">
++      <div className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2 md:hidden">
++        <PillBar className="scrollbar-hide flex-1 overflow-x-auto">
+           {NAV_ITEMS.map((item) => {
+             const Icon = item.icon;
+ 
+@@ -76,6 +96,13 @@ export default function SettingsSidebar({ activeTab, onChange }: SettingsSidebar
+             );
+           })}
+         </PillBar>
++        <button
++          onClick={handleLogout}
++          aria-label={tAuth('logout.button')}
++          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
++        >
++          <LogOut className="h-4 w-4" />
++        </button>
+       </div>
+     </>
+   );
+diff --git a/src/i18n/locales/de/settings.json b/src/i18n/locales/de/settings.json
+index 6358c70..dd33c22 100644
+--- a/src/i18n/locales/de/settings.json
++++ b/src/i18n/locales/de/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "Einstellungen",
++    "account": "Konto",
+     "agents": "Agenten",
+     "appearance": "Darstellung",
+     "git": "Git",
+diff --git a/src/i18n/locales/en/settings.json b/src/i18n/locales/en/settings.json
+index 1285ac3..d3cadc4 100644
+--- a/src/i18n/locales/en/settings.json
++++ b/src/i18n/locales/en/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "Settings",
++    "account": "Account",
+     "agents": "Agents",
+     "appearance": "Appearance",
+     "git": "Git",
+diff --git a/src/i18n/locales/it/settings.json b/src/i18n/locales/it/settings.json
+index 670798e..5173b06 100644
+--- a/src/i18n/locales/it/settings.json
++++ b/src/i18n/locales/it/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "Impostazioni",
++    "account": "Account",
+     "agents": "Agenti",
+     "appearance": "Aspetto",
+     "git": "Git",
+diff --git a/src/i18n/locales/ja/settings.json b/src/i18n/locales/ja/settings.json
+index 53cec8d..76437aa 100644
+--- a/src/i18n/locales/ja/settings.json
++++ b/src/i18n/locales/ja/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "設定",
++    "account": "アカウント",
+     "agents": "エージェント",
+     "appearance": "外観",
+     "git": "Git",
+diff --git a/src/i18n/locales/ko/settings.json b/src/i18n/locales/ko/settings.json
+index 0d3d2d3..fc5015d 100644
+--- a/src/i18n/locales/ko/settings.json
++++ b/src/i18n/locales/ko/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "설정",
++    "account": "계정",
+     "agents": "에이전트",
+     "appearance": "외관",
+     "git": "Git",
+diff --git a/src/i18n/locales/ru/settings.json b/src/i18n/locales/ru/settings.json
+index 9894487..1d28973 100644
+--- a/src/i18n/locales/ru/settings.json
++++ b/src/i18n/locales/ru/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "Настройки",
++    "account": "Аккаунт",
+     "agents": "Агенты",
+     "appearance": "Внешний вид",
+     "git": "Git",
+diff --git a/src/i18n/locales/tr/settings.json b/src/i18n/locales/tr/settings.json
+index 662b177..4ee9ea3 100644
+--- a/src/i18n/locales/tr/settings.json
++++ b/src/i18n/locales/tr/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "Ayarlar",
++    "account": "Hesap",
+     "agents": "Ajanlar",
+     "appearance": "Görünüm",
+     "git": "Git",
+diff --git a/src/i18n/locales/zh-CN/settings.json b/src/i18n/locales/zh-CN/settings.json
+index cfcc8ee..6184106 100644
+--- a/src/i18n/locales/zh-CN/settings.json
++++ b/src/i18n/locales/zh-CN/settings.json
+@@ -89,6 +89,7 @@
+   },
+   "mainTabs": {
+     "label": "设置",
++    "account": "账户",
+     "agents": "智能体",
+     "appearance": "外观",
+     "git": "Git",

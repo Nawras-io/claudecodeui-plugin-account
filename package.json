@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "Account management plugin (change username/password) for Claude Code UI.",
-  "license": "AGPL-3.0-or-later",
+  "author": "AlKindy (الكندي) — Nawras",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nawras-io/claudecodeui-plugin-account.git"
+  },
+  "homepage": "https://github.com/Nawras-io/claudecodeui-plugin-account#readme",
+  "bugs": "https://github.com/Nawras-io/claudecodeui-plugin-account/issues",
   "type": "module",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --format=esm --target=es2020 --outfile=dist/index.js"
