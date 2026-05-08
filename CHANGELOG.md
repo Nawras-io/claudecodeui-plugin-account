@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [siteboon/claudecodeui#744](https://github.com/siteboon/claudecodeui/issues/744).
   Documentation-only; no code or version bump.
 
+## [0.1.2] — 2026-05-09
+
+### Changed
+- Declared `slot` as `settings-section` so the plug-in renders inside the
+  host's Settings sidebar instead of the main top tab bar (requires host
+  with the `settings-section` slot whitelisted, e.g.,
+  `Claudecodeui-enhanced-appearance` or any cloudcli >= the version that
+  adds this slot).
+
 ## [0.1.1] — 2026-05-05
 
 ### Changed
