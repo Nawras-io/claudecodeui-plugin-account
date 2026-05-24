@@ -1,18 +1,27 @@
 # إضافة إدارة الحساب | Account Plug-in for Claude Code UI
 
-> مشروع مفتوح المصدر من **[نورس](https://alkindy.tech/nawras)** — مبادرة المصادر المفتوحة لـ[الكندي](https://alkindy.tech).
+> مشروع مفتوح المصدر من **[الكِندِي مفتوح](https://github.com/AlKindy-OSS)** — مشاريع المصدر المفتوح لـ[الكِندِي](https://alkindy.tech)، تتعهّدها شركة دار الكِندِي للخدمات.
 >
-> An open source project by **[Nawras](https://alkindy.tech/nawras)** — the open source initiative of **[AlKindy](https://alkindy.tech)**.
+> An open source project by **[AlKindy OSS](https://github.com/AlKindy-OSS)** — the open source projects of **[AlKindy](https://alkindy.tech)**, maintained by Kindi for Services Co.
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg)](LICENSE)
-[![Made by Nawras](https://img.shields.io/badge/made%20by-Nawras-teal.svg)](https://alkindy.tech/nawras)
-![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
-![Next](https://img.shields.io/badge/next-0.2.0%20(pending%20RFC)-orange.svg)
+[![Made by AlKindy OSS](https://img.shields.io/badge/made%20by-AlKindy%20OSS-teal.svg)](https://github.com/AlKindy-OSS)
+![Version](https://img.shields.io/badge/version-0.3.0--dev-orange.svg)
+![Requires](https://img.shields.io/badge/requires-cccui--auth--proxy-red.svg)
 
-> **Status / الحالة:** current stable **v0.1.1** · next planned **v0.2.0**
-> (pending upstream RFC acceptance in `siteboon/claudecodeui`).
-> الإصدار المستقر الحالي **v0.1.1**، والإصدار التالي المخطط له **v0.2.0**
-> (بانتظار قبول RFC في المستودع الأصلي).
+> **Status / الحالة:** in-development **v0.3.0** (multi-user, proxy-based).
+> Previous stable **v0.1.2** was single-user and patched the host directly.
+> The interim **v0.2.0** (HMAC-signed in-plug-in writes) branch is
+> **frozen and superseded** — do not merge `feat/v0.2.0-pure-plugin`.
+>
+> الإصدار قيد التطوير **v0.3.0** متعدد المستخدمين عبر بروكسي خارجي.
+> الإصدار السابق **v0.1.2** أحادي المستخدم وكان يُعدّل المضيف مباشرة.
+> الفرع المؤقت **v0.2.0** مجمَّد ومُلغى نهائياً.
+>
+> ⚠️ **v0.3.0 لا يعمل مستقلاً.** يتطلب تشغيل خدمة
+> [`cccui-auth-proxy`](../../docs/PROJECT_PLAN.md) أمام Claude Code UI.
+> Plan: [`PROJECT_PLAN.md`](../../PROJECT_PLAN.md) · Status:
+> [`PROJECT_STATUS.md`](../../PROJECT_STATUS.md).
 
 > **Independent project — not affiliated with Anthropic or siteboon.**
 > "Claude" is a trademark of Anthropic, PBC. This plug-in is a community
@@ -119,7 +128,7 @@ git apply path/to/plugins/account/server-patch/users-repository.patch
 
 #### 2) ثبّت الإضافة
 ```bash
-git clone https://github.com/Nawras-io/claudecodeui-plugin-account
+git clone https://github.com/AlKindy-OSS/claudecodeui-plugin-account
 cd claudecodeui-plugin-account
 npm install
 npm run build
@@ -178,7 +187,7 @@ Restart the server.
 
 #### 2) Install the plug-in
 ```bash
-git clone https://github.com/Nawras-io/claudecodeui-plugin-account
+git clone https://github.com/AlKindy-OSS/claudecodeui-plugin-account
 cd claudecodeui-plugin-account
 npm install
 npm run build
@@ -258,6 +267,6 @@ incorrect and is superseded by `0.1.1`.
 ---
 
 <p align="center">
-  صُنع بـ ♥ في نورس · جزء من الكندي<br>
-  Built with ♥ at Nawras · Part of AlKindy
+  صُنع بـ ♥ ضمن الكِندِي مفتوح · جزء من الكِندِي<br>
+  Built with ♥ within AlKindy OSS · Part of AlKindy
 </p>

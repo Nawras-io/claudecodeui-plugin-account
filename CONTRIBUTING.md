@@ -1,7 +1,7 @@
 # المساهمة | Contributing
 
-شكراً لاهتمامك بالمساهمة في **إضافة إدارة الحساب** — أحد مشاريع نورس.
-Thanks for your interest in contributing to the **Account Plug-in** — a Nawras project.
+شكراً لاهتمامك بالمساهمة في **إضافة إدارة الحساب** — أحد مشاريع الكِندِي مفتوح.
+Thanks for your interest in contributing to the **Account Plug-in** — an AlKindy OSS project.
 
 ---
 
@@ -73,4 +73,4 @@ refactor: code restructure without behavior change
 
 ---
 
-للأسئلة: `nawras@alkindy.tech` · For questions: `nawras@alkindy.tech`
+للأسئلة: `oss@alkindy.tech` · For questions: `oss@alkindy.tech`
